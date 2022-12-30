@@ -1,0 +1,31 @@
+{
+  "name": "@dcl/babylon-preview",
+  "version": "0.0.0-development",
+  "private": true,
+  "dependencies": {
+    "@babylonjs/core": "^5.40.0",
+    "@babylonjs/gui": "^5.40.0",
+    "@babylonjs/inspector": "^5.40.0",
+    "@babylonjs/loaders": "^5.40.0",
+    "@babylonjs/materials": "^5.40.0",
+    "@dcl/schemas": "^5.27.0",
+    "@dcl/sdk": "^7.0.6-3809032379.commit-57d5c28",
+    "express": "^4.18.2",
+    "fp-future": "^1.0.1",
+    "titere": "^3.0.0",
+    "typescript": "^4.9.4"
+  },
+  "scripts": {
+    "start": "./build.js -watch",
+    "build": "./build.js"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 120
+  },
+  "homepage": "",
+  "devDependencies": {
+    "estrella": "^1.4.1"
+  }
+}
