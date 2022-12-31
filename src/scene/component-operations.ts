@@ -1,10 +1,14 @@
-import { ComponentDefinition, Entity } from '@dcl/sdk/ecs'
+import { ComponentDefinition, Entity, MeshRenderer, PointerEvents } from '@dcl/sdk/ecs'
 import { Transform } from '@dcl/sdk/ecs'
 import { EcsEntity } from './EcsEntity'
-import { putTransformComponent } from './transform-logic'
+import { putTransformComponent } from './components/transform'
+import { putMeshRendererComponent } from './components/mesh-renderer'
+import { putPointerEventsComponent } from './components/pointer-events'
 
-export type ComponentOperation = <T>(entity: Entity, ecsEntity: EcsEntity, component: ComponentDefinition<T>) => void
+export type ComponentOperation = <T>(ecsEntity: EcsEntity, component: ComponentDefinition<T>) => void
 
 export const componentPutOperations: Record<number, ComponentOperation> = {
   [Transform._id]: putTransformComponent,
+  [MeshRenderer._id]: putMeshRendererComponent,
+  [PointerEvents._id]: putPointerEventsComponent,
 }

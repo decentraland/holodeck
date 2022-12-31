@@ -22,6 +22,7 @@ export const Billboard = components.Billboard(engine)
 export const Transform = components.Transform(engine)
 export const MeshRenderer = components.MeshRenderer(engine)
 export const TextShape = components.TextShape(engine)
+export const PointerEvents = components.PointerEvents(engine)
 
 babylon.onEndFrameObservable.add(async () => {
   await engine.update(babylon.getDeltaTime() / 1000)

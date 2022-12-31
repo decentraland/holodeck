@@ -1,11 +1,13 @@
 import { Quaternion } from '@babylonjs/core'
 import { Entity, TransformType } from '@dcl/sdk/ecs'
-import type { ComponentOperation } from './component-operations'
-import { EcsEntity } from './EcsEntity'
+import type { ComponentOperation } from '../component-operations'
+import { EcsEntity } from '../EcsEntity'
 
-export const putTransformComponent: ComponentOperation = (entityId, entity, component) => {
-  const newValue = component.getOrNull(entityId) as TransformType | null
+export const putTransformComponent: ComponentOperation = (entity, component) => {
+  const newValue = component.getOrNull(entity.entityId) as TransformType | null
   const currentValue = entity.ecsComponentValues.transform
+  entity.ecsComponentValues.transform = newValue || undefined
+
   let needsReparenting = false
 
   if (!currentValue && newValue) {
@@ -36,8 +38,6 @@ export const putTransformComponent: ComponentOperation = (entityId, entity, comp
     entity.scaling.set(newValue.scale.x, newValue.scale.y, newValue.scale.z)
   }
 
-  entity.ecsComponentValues.transform = newValue || undefined
-
   if (needsReparenting) reparentEntity(entity)
 }
 
@@ -51,7 +51,10 @@ export function createDefaultTransform(entity: EcsEntity) {
   if (transformContext) {
     const reparentQueue = transformContext.pendingParentQueues.get(entity.entityId)
     if (reparentQueue?.size) {
+      const ctx = entity.context.deref()
       for (const child of reparentQueue) {
+        const childEnity = ctx?.getEntityOrNull(child)
+        childEnity && reparentEntity(childEnity)
       }
       reparentQueue.clear()
     }

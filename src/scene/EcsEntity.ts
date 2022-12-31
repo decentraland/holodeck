@@ -1,57 +1,35 @@
 import * as BABYLON from '@babylonjs/core'
-import { ComponentDefinition, Entity, TransformType } from '@dcl/sdk/ecs'
+import { ComponentDefinition, Entity, PBMeshRenderer, PBPointerEvents, TransformType } from '@dcl/sdk/ecs'
 import { componentPutOperations } from './component-operations'
 import { SceneContext } from './SceneContext'
-import { createDefaultTransform } from './transform-logic'
+import { createDefaultTransform } from './components/transform'
 
 export type EcsComponents = Partial<{
   transform: TransformType
+  meshRenderer: PBMeshRenderer
+  pointerEvents: PBPointerEvents
 }>
 
-function matrixWorldDidUpdate(entity: EcsEntity): void {
-  if (entity.sendPositionsPending || entity.previousWorldMatrix.equals(entity.worldMatrixFromCache)) {
-    // it is scheduled or it shares the same worldMatrix. Do nothing
-  } else {
-    entity.previousWorldMatrix.copyFrom(entity._worldMatrix)
-    entity.sendPositionsPending = true
-    queueMicrotask(entity.sendUpdatePositions)
-  }
-}
-
-export class EcsEntity extends BABYLON.AbstractMesh {
+export class EcsEntity extends BABYLON.TransformNode {
   readonly isDCLEntity = true
   usedComponents = new Map<number, ComponentDefinition<unknown>>()
 
-  sendPositionsPending = false
-  previousWorldMatrix = BABYLON.Matrix.Zero()
-
+  meshRenderer?: BABYLON.AbstractMesh
   ecsComponentValues: EcsComponents = {}
 
   constructor(public entityId: Entity, public context: WeakRef<SceneContext>) {
     super(`ecs-${entityId.toString(16)}`)
     createDefaultTransform(this)
-
-    BABYLON.MeshBuilder.CreateBox('box', {}).setParent(this)
-
-    this.onAfterWorldMatrixUpdateObservable.add(matrixWorldDidUpdate as any)
-  }
-
-  sendUpdatePositions = () => {
-    this.sendPositionsPending = false
-    if (!this.isDisposed()) {
-      this.previousWorldMatrix.copyFrom(this._worldMatrix)
-      // this.context.onEntityMatrixChangedObservable.notifyObservers(this)
-    }
   }
 
   putComponent(component: ComponentDefinition<unknown>) {
     this.usedComponents.set(component._id, component)
-    componentPutOperations[component._id]?.call(null, this.entityId, this, component)
+    componentPutOperations[component._id]?.call(null, this, component)
   }
 
   deleteComponent(component: ComponentDefinition<unknown>) {
     this.usedComponents.delete(component._id)
-    componentPutOperations[component._id]?.call(null, this.entityId, this, component)
+    componentPutOperations[component._id]?.call(null, this, component)
   }
 
   /**

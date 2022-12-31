@@ -17,8 +17,8 @@ function createCube(x: number, y: number, z: number) {
 }
 
 export function spawnCubes() {
-  for (let x = 0.5; x < 16; x += 1) {
-    for (let y = 0.5; y < 16; y += 1) {
+  for (let x = 0.5; x < 32; x += 1) {
+    for (let y = 0.5; y < 32; y += 1) {
       createCube(x, 0, y)
     }
   }

@@ -1,6 +1,6 @@
 import * as BABYLON from '@babylonjs/core'
-import { scene, canvas, babylon, effectLayers, sceneReadyFuture, getHighlightLayer } from "./defaultScene"
-import { initKeyboard } from "./input"
+import { scene, canvas, babylon, effectLayers } from './defaultScene'
+import { initKeyboard } from './input'
 
 export async function initEngine(): Promise<BABYLON.Scene> {
   const vrHelper = await scene.createDefaultXRExperienceAsync({})
@@ -21,11 +21,9 @@ export async function initEngine(): Promise<BABYLON.Scene> {
   scene.audioEnabled = true
   scene.headphone = true
 
-
   scene.actionManager = new BABYLON.ActionManager(scene)
 
   babylon.enableOfflineSupport = false
-
 
   babylon.disableManifestCheck = true
 
@@ -35,33 +33,30 @@ export async function initEngine(): Promise<BABYLON.Scene> {
     const gl = new BABYLON.GlowLayer('glow', scene)
     effectLayers.push(gl)
 
-    effectLayers.forEach($ => scene.effectLayers.includes($) || scene.addEffectLayer($))
+    effectLayers.forEach(($) => scene.effectLayers.includes($) || scene.addEffectLayer($))
 
-    scene.removeEffectLayer = function(this: any, layer: BABYLON.EffectLayer) {
+    scene.removeEffectLayer = function (this: any, layer: BABYLON.EffectLayer) {
       if (effectLayers.includes(layer)) return
       scene.constructor.prototype.removeEffectLayer.apply(this, arguments)
     } as any
 
-    scene.addEffectLayer = function(this: any, layer: BABYLON.EffectLayer) {
+    scene.addEffectLayer = function (this: any, layer: BABYLON.EffectLayer) {
       if (effectLayers.includes(layer)) return
       scene.constructor.prototype.addEffectLayer.apply(this, arguments)
     } as any
-
-    sceneReadyFuture.resolve()
   })
 
   initKeyboard()
-  getHighlightLayer()
 
   // Register a render loop to repeatedly render the scene
   babylon.runRenderLoop(function () {
-    scene.render();
-  });
+    scene.render()
+  })
 
   // Watch for browser/canvas resize events
-  window.addEventListener("resize", function () {
-    babylon.resize();
-  });
+  window.addEventListener('resize', function () {
+    babylon.resize()
+  })
 
   return scene
 }
