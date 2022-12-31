@@ -1,16 +1,18 @@
 import * as BABYLON from '@babylonjs/core'
 require('@babylonjs/inspector')
 
-import { initEngine, scene } from './renderer/defaultScene'
-import './renderer/camera'
+import { initEngine } from './renderer/setup'
+import './renderer/setup/camera'
 import { probe, setCamera } from './renderer/visual/ambientLights'
 
-;import { initKeyboard } from './renderer/input';
-import { editorCamera } from './renderer/camera';
+import { editorCamera } from './renderer/setup/camera';
 
-initKeyboard()
+import './scene'
+import './mocked-scene'
+
+
 // Add your code here matching the playground format
-initEngine().then(() => {
+initEngine().then((scene) => {
   // cube
   BABYLON.MeshBuilder.CreateBox('box', {})
 

@@ -1,11 +1,11 @@
 import * as BABYLON from '@babylonjs/core'
 import * as Materials from '@babylonjs/materials'
-import { canvas, scene } from '../defaultScene'
+import { canvas, scene } from '../setup/defaultScene'
 import { EnvironmentHelper, skyMaterial2 } from './envHelper'
 import { ambientConfigurations } from './ambientConfigurations'
-import { firstPersonCamera, thirdPersonCamera, editorCamera } from '../camera'
+import { firstPersonCamera, thirdPersonCamera, editorCamera } from '../setup/camera'
 import { createCrossHair } from './crosshair'
-import { PARCEL_SIZE, visualConfigurations } from '../config'
+import { PARCEL_SIZE, visualConfigurations } from '../setup/config'
 
 export const hemiLight = new BABYLON.HemisphericLight('default light', ambientConfigurations.sunPosition, scene)
 

@@ -3,7 +3,7 @@ import { Observable } from '@babylonjs/core'
 import './customShaders'
 
 import { ambientConfigurations } from './ambientConfigurations'
-import { PARCEL_SIZE, visualConfigurations } from '../config'
+import { PARCEL_SIZE, visualConfigurations } from '../setup/config'
 
 BABYLON.Effect.ShadersStore['dclskyVertexShader'] = `
   // Attributes

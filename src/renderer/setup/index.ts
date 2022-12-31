@@ -1,31 +1,8 @@
 import * as BABYLON from '@babylonjs/core'
-import future from 'fp-future';
-import { createCrossHair } from './visual/crosshair'
+import { scene, canvas, babylon, effectLayers, sceneReadyFuture, getHighlightLayer } from "./defaultScene"
+import { initKeyboard } from "./input"
 
-export const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element
-
-export const engine = new BABYLON.Engine(canvas, true, {
-  audioEngine: true,
-  autoEnableWebVR: true,
-  deterministicLockstep: true,
-  lockstepMaxSteps: 4,
-  alpha: false,
-  antialias: true,
-  stencil: true
-})
-
-/**
- * This is the main scene of the engine.
- */
-export const scene = new BABYLON.Scene(engine)
-export const audioEngine = BABYLON.Engine.audioEngine
-export let highlightLayer: BABYLON.HighlightLayer
-export const effectLayers: BABYLON.EffectLayer[] = []
-export const sceneReadyFuture = future<void>()
-
-export const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-
-export async function initEngine() {
+export async function initEngine(): Promise<BABYLON.Scene> {
   const vrHelper = await scene.createDefaultXRExperienceAsync({})
 
   scene.clearColor = BABYLON.Color3.FromInts(31, 29, 35).toColor4(1)
@@ -47,10 +24,10 @@ export async function initEngine() {
 
   scene.actionManager = new BABYLON.ActionManager(scene)
 
-  engine.enableOfflineSupport = false
+  babylon.enableOfflineSupport = false
 
 
-  engine.disableManifestCheck = true
+  babylon.disableManifestCheck = true
 
   scene.getBoundingBoxRenderer().showBackLines = false
 
@@ -73,35 +50,18 @@ export async function initEngine() {
     sceneReadyFuture.resolve()
   })
 
+  initKeyboard()
   getHighlightLayer()
 
   // Register a render loop to repeatedly render the scene
-  engine.runRenderLoop(function () {
+  babylon.runRenderLoop(function () {
     scene.render();
   });
 
   // Watch for browser/canvas resize events
   window.addEventListener("resize", function () {
-    engine.resize();
+    babylon.resize();
   });
-}
 
-
-export function getHighlightLayer() {
-  if (highlightLayer) {
-    return highlightLayer
-  }
-
-  highlightLayer = new BABYLON.HighlightLayer('highlight', scene)
-
-  if (!scene.effectLayers.includes(highlightLayer)) {
-    scene.addEffectLayer(highlightLayer)
-  }
-
-  highlightLayer.innerGlow = false
-  highlightLayer.outerGlow = true
-
-  effectLayers.push(highlightLayer)
-
-  return highlightLayer
+  return scene
 }

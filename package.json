@@ -9,7 +9,7 @@
     "@babylonjs/loaders": "^5.40.0",
     "@babylonjs/materials": "^5.40.0",
     "@dcl/schemas": "^5.27.0",
-    "@dcl/sdk": "^7.0.6-3809032379.commit-57d5c28",
+    "@dcl/sdk": "https://sdk-team-cdn.decentraland.org/@dcl/js-sdk-toolchain/branch/observable-ecs/dcl-sdk-7.0.6-3810102866.commit-b964da6.tgz",
     "express": "^4.18.2",
     "fp-future": "^1.0.1",
     "titere": "^3.0.0",

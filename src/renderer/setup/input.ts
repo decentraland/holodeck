@@ -1,7 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import { firstPersonCamera, isFirstPersonCamera, editorCamera, isEditorCamera } from './camera'
 import { playerConfigurations } from './config'
-import { scene, engine, canvas } from './defaultScene'
+import { scene, babylon, canvas } from './defaultScene'
 
 /**
  * This is a map of keys (see enum Keys): boolean
@@ -79,25 +79,25 @@ export function initKeyboard() {
     if (editorCamera === scene.activeCamera) {
       if (keyState[Keys.KEY_LEFT] || keyState[Keys.KEY_A]) {
         editorCamera.target.addInPlace(
-          moveCamera(editorCamera, CAMERA_LEFT, CAMERA_SPEED * engine.getDeltaTime())
+          moveCamera(editorCamera, CAMERA_LEFT, CAMERA_SPEED * babylon.getDeltaTime())
         )
       }
 
       if (keyState[Keys.KEY_RIGHT] || keyState[Keys.KEY_D]) {
         editorCamera.target.addInPlace(
-          moveCamera(editorCamera, CAMERA_RIGHT, CAMERA_SPEED * engine.getDeltaTime())
+          moveCamera(editorCamera, CAMERA_RIGHT, CAMERA_SPEED * babylon.getDeltaTime())
         )
       }
 
       if (keyState[Keys.KEY_UP] || keyState[Keys.KEY_W]) {
         editorCamera.target.addInPlace(
-          moveCamera(editorCamera, CAMERA_FORWARD, CAMERA_SPEED * engine.getDeltaTime())
+          moveCamera(editorCamera, CAMERA_FORWARD, CAMERA_SPEED * babylon.getDeltaTime())
         )
       }
 
       if (keyState[Keys.KEY_DOWN] || keyState[Keys.KEY_S]) {
         editorCamera.target.addInPlace(
-          moveCamera(editorCamera, CAMERA_BACKWARD, CAMERA_SPEED * engine.getDeltaTime())
+          moveCamera(editorCamera, CAMERA_BACKWARD, CAMERA_SPEED * babylon.getDeltaTime())
         )
       }
     }
