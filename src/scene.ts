@@ -2,17 +2,19 @@ import * as BABYLON from '@babylonjs/core'
 
 import { ComponentDefinition, Engine, Entity, WireMessage } from '@dcl/sdk/ecs'
 import * as components from '@dcl/ecs/dist/components'
-import { babylon } from './renderer/setup/defaultScene'
+import { babylon, scene } from './renderer/setup/defaultScene'
+import { SceneContext } from './scene/SceneContext'
+
+const ctx = new SceneContext(scene)
 
 export const engine = Engine({
   onChangeFunction(
     entity: Entity,
     component: ComponentDefinition<any>,
     componentId: number,
-    operation: WireMessage.Enum
+    op: WireMessage.Enum
   ) {
-    // console.log(entity, component, componentId, operation)
-
+    ctx.processEcsChange(entity, component, op)
   },
 })
 
@@ -22,7 +24,5 @@ export const MeshRenderer = components.MeshRenderer(engine)
 export const TextShape = components.TextShape(engine)
 
 babylon.onEndFrameObservable.add(async () => {
-  await engine.update(babylon.getDeltaTime() * 1000)
+  await engine.update(babylon.getDeltaTime() / 1000)
 })
-
-const babylonEntities = new Map<Entity, BABYLON.Node>()

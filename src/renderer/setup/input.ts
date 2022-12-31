@@ -1,4 +1,5 @@
 import * as BABYLON from '@babylonjs/core'
+import { EcsEntity } from '../../scene/EcsEntity'
 import { firstPersonCamera, isFirstPersonCamera, editorCamera, isEditorCamera } from './camera'
 import { playerConfigurations } from './config'
 import { scene, babylon, canvas } from './defaultScene'
@@ -140,9 +141,7 @@ function applyQuaternion(v: BABYLON.Vector3, q: BABYLON.Quaternion) {
 
 function findParentEntity<T extends BABYLON.Node & { isDCLEntity?: boolean }>(
   node: T
-): {
-  handleClick(pointerEvent: 'pointerUp' | 'pointerDown', pointerId: number, pickingResult: BABYLON.PickingInfo): void
-} | null {
+): EcsEntity | null {
   // Find the next entity parent to dispatch the event
   let parent: BABYLON.Node | null = node.parent
 
@@ -164,7 +163,7 @@ export function interactWithScene(pointerEvent: 'pointerUp' | 'pointerDown', x: 
   const entity = mesh && findParentEntity(mesh)
 
   if (entity) {
-    entity.handleClick(pointerEvent, pointerId, pickingResult!)
+    // entity.handleClick(pointerEvent, pointerId, pickingResult!)
   } else {
     // for (let [, scene] of loadedSceneWorkers) {
     //   if (scene.parcelScene instanceof WebGLScene) {
