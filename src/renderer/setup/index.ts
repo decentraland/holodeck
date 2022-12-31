@@ -46,6 +46,8 @@ export async function initEngine(): Promise<BABYLON.Scene> {
     } as any
   })
 
+  BABYLON.Database.IDBStorageEnabled = true;
+
   initKeyboard()
 
   // Register a render loop to repeatedly render the scene

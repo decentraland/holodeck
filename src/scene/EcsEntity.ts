@@ -1,5 +1,5 @@
 import * as BABYLON from '@babylonjs/core'
-import { ComponentDefinition, Entity, PBMeshRenderer, PBPointerEvents, TransformType } from '@dcl/sdk/ecs'
+import { ComponentDefinition, Entity, PBGltfContainer, PBMeshRenderer, PBPointerEvents, TransformType } from '@dcl/sdk/ecs'
 import { componentPutOperations } from './component-operations'
 import { SceneContext } from './SceneContext'
 import { createDefaultTransform } from './components/transform'
@@ -8,6 +8,7 @@ export type EcsComponents = Partial<{
   transform: TransformType
   meshRenderer: PBMeshRenderer
   pointerEvents: PBPointerEvents
+  gltfContainer: PBGltfContainer
 }>
 
 export class EcsEntity extends BABYLON.TransformNode {
@@ -15,6 +16,9 @@ export class EcsEntity extends BABYLON.TransformNode {
   usedComponents = new Map<number, ComponentDefinition<unknown>>()
 
   meshRenderer?: BABYLON.AbstractMesh
+  gltfContainer?: BABYLON.AbstractMesh
+  gltfAssetContainer?: BABYLON.AssetContainer
+
   ecsComponentValues: EcsComponents = {}
 
   constructor(public entityId: Entity, public context: WeakRef<SceneContext>) {

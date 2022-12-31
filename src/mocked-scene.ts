@@ -1,5 +1,5 @@
-import { Color3 } from "@dcl/ecs-math"
-import { Billboard, engine, MeshRenderer, TextShape, Transform, Material } from "./scene"
+import { Color3 } from '@dcl/ecs-math'
+import { Billboard, engine, MeshRenderer, TextShape, Transform, Material, GltfContainer } from './scene'
 
 // My cube generator
 function createCube(x: number, y: number, z: number) {
@@ -34,6 +34,26 @@ function spawnCubes() {
   MeshRenderer.setSphere(sphere)
   Transform.create(sphere, {
     position: { x: -5, y: 6, z: -2 },
+  })
+  {
+    const glb = engine.addEntity()
+    GltfContainer.create(glb, { src: 'models/shark.glb' })
+    Transform.create(glb, {
+      position: { x: -10, y: 1, z: -2 },
+    })
+  }
+  {
+    const glb = engine.addEntity()
+    GltfContainer.create(glb, { src: 'models/Fish_01.glb' })
+    Transform.create(glb, {
+      position: { x: -10, y: 1, z: 5 },
+      scale: { x: 5, y: 5, z: 5 },
+    })
+  }
+  const gltf = engine.addEntity()
+  GltfContainer.create(gltf, { src: 'models/Underwater_floor.glb' })
+  Transform.create(gltf, {
+    position: { x: -10, y: 0, z: -2 },
   })
 
   const sign = engine.addEntity(true)
@@ -95,7 +115,6 @@ function CircleHoverSystem(dt: number) {
   }
 }
 
-
 let totalTime: number = 0
 let color = true
 
@@ -122,4 +141,3 @@ function MaterialChangerSystem(dt: number) {
 spawnCubes()
 engine.addSystem(CircleHoverSystem)
 engine.addSystem(MaterialChangerSystem)
-

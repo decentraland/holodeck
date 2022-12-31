@@ -1,6 +1,12 @@
-import * as BABYLON from '@babylonjs/core'
+import * as Schemas from '@dcl/schemas'
 import { ComponentDefinition, Entity, WireMessage } from '@dcl/sdk/ecs'
 import { EcsEntity } from './EcsEntity'
+
+export type LoadableScene = {
+  readonly entity: Readonly<Omit<Schemas.Entity, 'id'>>
+  readonly baseUrl: string
+  readonly id: string
+}
 
 export class SceneContext {
   entities = new Map<Entity, EcsEntity>()
@@ -12,7 +18,7 @@ export class SceneContext {
     error: console.error.bind(console),
   }
 
-  constructor(scene: BABYLON.Scene) {
+  constructor(public loadableScene: LoadableScene) {
     this.rootNode = new EcsEntity(0 as Entity, this.weakThis)
   }
 
@@ -52,6 +58,18 @@ export class SceneContext {
 
   getEntityOrNull(entityId: Entity): EcsEntity | null {
     return this.entities.get(entityId) || null
+  }
+
+  resolveFile(src: string): string | null {
+    // filenames are lower cased as per https://adr.decentraland.org/adr/ADR-80
+    const normalized = src.toLowerCase()
+
+    // and we iterate over the entity content mappings to resolve the file hash
+    for (const { file, hash } of this.loadableScene.entity.content) {
+      if (file.toLowerCase() == normalized) return hash
+    }
+
+    return null
   }
 }
 
