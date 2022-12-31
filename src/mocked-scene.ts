@@ -23,11 +23,19 @@ export function spawnCubes() {
     }
   }
 
+  const plane = engine.addEntity()
+  MeshRenderer.setPlane(plane)
+  Billboard.create(plane)
+  Transform.create(plane, {
+    position: { x: -3, y: 6, z: -3 },
+    scale: { x: 1.2, y: 1.2, z: 1.2 },
+  })
+
   const sign = engine.addEntity(true)
   Transform.create(sign, {
     position: { x: 8, y: 6, z: 8 },
     scale: { x: 1.2, y: 1.2, z: 1.2 },
-    rotation: { x: 0, y: 0, z: 0, w: 0 },
+    rotation: { x: 0, y: 0, z: 0, w: 1 },
   })
 
   TextShape.create(sign, {

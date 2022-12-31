@@ -1,4 +1,4 @@
-import { MeshBuilder, Mesh, Vector3, Space } from '@babylonjs/core'
+import { MeshBuilder, Mesh, Vector3, Space, VertexBuffer } from '@babylonjs/core'
 import { PBMeshRenderer } from '@dcl/sdk/ecs'
 import type { ComponentOperation } from '../component-operations'
 import { EcsEntity } from '../EcsEntity'
@@ -10,23 +10,37 @@ const baseBox = MeshBuilder.CreateBox('base-box', {
 
 export const putMeshRendererComponent: ComponentOperation = (entity, component) => {
   const newValue = component.getOrNull(entity.entityId) as PBMeshRenderer | null
-  const currentValue = entity.ecsComponentValues.meshRenderer
   entity.ecsComponentValues.meshRenderer = newValue || undefined
 
-  if (!newValue) {
-    removeMeshRenderer(entity)
-  } else {
-    if (currentValue?.mesh?.$case !== newValue?.mesh?.$case) {
-      if (newValue?.mesh?.$case == 'box') {
-        removeMeshRenderer(entity)
-        entity.meshRenderer = baseBox.createInstance("instanced-box")
-        entity.meshRenderer.parent = entity
-      }
+  // for simplicity of the example, we will remove the Mesh on every update.
+  // this is not optimal for production code, re-using when possible is RECOMMENDED
+  removeMeshRenderer(entity)
+
+  // then proceed to create the desired MeshRenderer
+  if (newValue?.mesh?.$case == 'box') {
+    entity.meshRenderer = baseBox.createInstance('instanced-box')
+    entity.meshRenderer.parent = entity
+  } else if (newValue?.mesh?.$case == 'plane') {
+    const mesh = MeshBuilder.CreatePlane('plane-shape', {
+      width: 1,
+      height: 1,
+      sideOrientation: 2,
+      updatable: true,
+    })
+
+    if (newValue.mesh.plane.uvs?.length) {
+      mesh.updateVerticesData(VertexBuffer.UVKind, newValue.mesh.plane.uvs)
+    } else {
+      mesh.updateVerticesData(VertexBuffer.UVKind, [0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0])
     }
 
-    if (entity.meshRenderer) {
-      entity.meshRenderer.isPickable = isEntityPickable(entity)
-    }
+    entity.meshRenderer = mesh
+    entity.meshRenderer.parent = entity
+  }
+
+  // make the renderer interactable only if the entity is Pickable
+  if (entity.meshRenderer) {
+    entity.meshRenderer.isPickable = isEntityPickable(entity)
   }
 }
 
