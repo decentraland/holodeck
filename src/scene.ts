@@ -20,6 +20,7 @@ export const engine = Engine({
 
 export const Billboard = components.Billboard(engine)
 export const Transform = components.Transform(engine)
+export const Material = components.Material(engine)
 export const MeshRenderer = components.MeshRenderer(engine)
 export const TextShape = components.TextShape(engine)
 export const PointerEvents = components.PointerEvents(engine)

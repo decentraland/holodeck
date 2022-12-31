@@ -42,10 +42,8 @@ export const putMeshRendererComponent: ComponentOperation = (entity, component) 
       tessellation: 16,
       arc: Math.PI * 2,
       updatable: false,
+      height: 1
     })
-
-    entity.meshRenderer = baseSphere.createInstance('instanced-sphere')
-    entity.meshRenderer.parent = entity
 
     entity.meshRenderer = mesh
     entity.meshRenderer.parent = entity
@@ -75,6 +73,8 @@ export const putMeshRendererComponent: ComponentOperation = (entity, component) 
 
 function removeMeshRenderer(entity: EcsEntity) {
   if (entity.meshRenderer) {
+    entity.meshRenderer.setEnabled(false)
+    entity.meshRenderer.parent = null
     entity.meshRenderer.dispose(false, false)
     delete entity.meshRenderer
   }

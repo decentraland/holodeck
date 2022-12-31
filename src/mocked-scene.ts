@@ -1,6 +1,5 @@
-import { Billboard, engine, MeshRenderer, TextShape, Transform } from "./scene"
-
-engine.addSystem(CircleHoverSystem)
+import { Color3 } from "@dcl/ecs-math"
+import { Billboard, engine, MeshRenderer, TextShape, Transform, Material } from "./scene"
 
 // My cube generator
 function createCube(x: number, y: number, z: number) {
@@ -16,13 +15,7 @@ function createCube(x: number, y: number, z: number) {
   return myEntity
 }
 
-export function spawnCubes() {
-  for (let x = 0.5; x < 32; x += 1) {
-    for (let y = 0.5; y < 32; y += 1) {
-      createCube(x, 0, y)
-    }
-  }
-
+function spawnCubes() {
   const plane = engine.addEntity()
   MeshRenderer.setPlane(plane)
   Billboard.create(plane)
@@ -73,6 +66,12 @@ export function spawnCubes() {
   Billboard.create(sign, {
     oppositeDirection: true,
   })
+
+  for (let x = 0.5; x < 16; x += 1) {
+    for (let y = 0.5; y < 16; y += 1) {
+      createCube(x, 0, y)
+    }
+  }
 }
 
 let hoverState: number = 0
@@ -96,5 +95,31 @@ function CircleHoverSystem(dt: number) {
   }
 }
 
+
+let totalTime: number = 0
+let color = true
+
+function MaterialChangerSystem(dt: number) {
+  totalTime += dt
+
+  while (totalTime > 1) {
+    totalTime -= 1
+    color = !color
+  }
+
+  const entitiesWithBoxShapes = engine.getEntitiesWith(MeshRenderer, Transform)
+
+  // iterate over the entities of the group
+  for (const [entity] of entitiesWithBoxShapes) {
+    Material.setPbrMaterial(entity, {
+      albedoColor: color ? Color3.Blue() : Color3.Green(),
+    })
+    const { scale } = Transform.getMutable(entity)
+    scale.x = scale.y = scale.z = color ? 0.5 : 1
+  }
+}
+
 spawnCubes()
+engine.addSystem(CircleHoverSystem)
+engine.addSystem(MaterialChangerSystem)
 
