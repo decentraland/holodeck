@@ -31,6 +31,14 @@ export function spawnCubes() {
     scale: { x: 1.2, y: 1.2, z: 1.2 },
   })
 
+  const sphere = engine.addEntity()
+  MeshRenderer.setSphere(sphere)
+  Transform.create(sphere, {
+    position: { x: -5, y: 6, z: -2 },
+    scale: { x: 1.2, y: 1.2, z: 1.2 },
+  })
+
+
   const sign = engine.addEntity(true)
   Transform.create(sign, {
     position: { x: 8, y: 6, z: 8 },

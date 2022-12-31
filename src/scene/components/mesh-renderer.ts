@@ -7,6 +7,14 @@ import { isEntityPickable } from './pointer-events'
 const baseBox = MeshBuilder.CreateBox('base-box', {
   updatable: false,
 })
+baseBox.setEnabled(false)
+
+const baseSphere = MeshBuilder.CreateSphere('base-sphere', {
+  diameter: 1,
+  updatable: false,
+  segments: 8,
+})
+baseSphere.setEnabled(false)
 
 export const putMeshRendererComponent: ComponentOperation = (entity, component) => {
   const newValue = component.getOrNull(entity.entityId) as PBMeshRenderer | null
@@ -19,6 +27,11 @@ export const putMeshRendererComponent: ComponentOperation = (entity, component) 
   // then proceed to create the desired MeshRenderer
   if (newValue?.mesh?.$case == 'box') {
     entity.meshRenderer = baseBox.createInstance('instanced-box')
+    entity.meshRenderer.parent = entity
+
+    // TODO: set UVS for box `newValue.mesh.box.uvs`
+  } else if (newValue?.mesh?.$case == 'sphere') {
+    entity.meshRenderer = baseSphere.createInstance('instanced-sphere')
     entity.meshRenderer.parent = entity
   } else if (newValue?.mesh?.$case == 'plane') {
     const mesh = MeshBuilder.CreatePlane('plane-shape', {
