@@ -1,29 +1,30 @@
 import * as BABYLON from '@babylonjs/core'
+require('@babylonjs/inspector')
 
-const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement; // Get the canvas element
-const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+import { initEngine, scene } from './renderer/defaultScene'
+import './renderer/camera'
+import { probe, setCamera } from './renderer/visual/ambientLights'
 
+;import { initKeyboard } from './renderer/input';
+import { editorCamera } from './renderer/camera';
+
+initKeyboard()
 // Add your code here matching the playground format
-const createScene = function () {
-  const scene = new BABYLON.Scene(engine);
+initEngine().then(() => {
+  // cube
+  BABYLON.MeshBuilder.CreateBox('box', {})
 
-  BABYLON.MeshBuilder.CreateBox("box", {});
+  // Sphere
+  var sphere = BABYLON.MeshBuilder.CreateSphere('sphere1', {})
+  sphere.position.y = 1
+  sphere.position.set(0, 3, 0)
 
-  const camera = new BABYLON.ArcRotateCamera("camera", -Math.PI / 2, Math.PI / 2.5, 15, new BABYLON.Vector3(0, 0, 0));
-  camera.attachControl(canvas, true);
-  const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+  // PBR
+  var pbr = new BABYLON.PBRMaterial('pbr', scene)
+  pbr.reflectionTexture = probe.cubeTexture
+  sphere.material = pbr
 
-  return scene;
-};
+  setCamera(editorCamera)
 
-const scene = createScene(); //Call the createScene function
-
-// Register a render loop to repeatedly render the scene
-engine.runRenderLoop(function () {
-  scene.render();
-});
-
-// Watch for browser/canvas resize events
-window.addEventListener("resize", function () {
-  engine.resize();
-});
+  scene.debugLayer.show({ showExplorer: true, embedMode: true })
+})
