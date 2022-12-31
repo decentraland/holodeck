@@ -28,22 +28,24 @@ export function spawnCubes() {
   Billboard.create(plane)
   Transform.create(plane, {
     position: { x: -3, y: 6, z: -3 },
-    scale: { x: 1.2, y: 1.2, z: 1.2 },
+    scale: { x: 1, y: 1, z: 1 },
+  })
+
+  const cyllinder = engine.addEntity()
+  MeshRenderer.setCylinder(cyllinder, 0.3, 0.8)
+  Transform.create(cyllinder, {
+    position: { x: -4, y: 6, z: -4 },
   })
 
   const sphere = engine.addEntity()
   MeshRenderer.setSphere(sphere)
   Transform.create(sphere, {
     position: { x: -5, y: 6, z: -2 },
-    scale: { x: 1.2, y: 1.2, z: 1.2 },
   })
-
 
   const sign = engine.addEntity(true)
   Transform.create(sign, {
     position: { x: 8, y: 6, z: 8 },
-    scale: { x: 1.2, y: 1.2, z: 1.2 },
-    rotation: { x: 0, y: 0, z: 0, w: 1 },
   })
 
   TextShape.create(sign, {

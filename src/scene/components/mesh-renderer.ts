@@ -33,6 +33,22 @@ export const putMeshRendererComponent: ComponentOperation = (entity, component) 
   } else if (newValue?.mesh?.$case == 'sphere') {
     entity.meshRenderer = baseSphere.createInstance('instanced-sphere')
     entity.meshRenderer.parent = entity
+  } else if (newValue?.mesh?.$case == 'cylinder') {
+    const mesh = MeshBuilder.CreateCylinder('cone', {
+      diameterTop: newValue.mesh.cylinder.radiusTop !== undefined ? newValue.mesh.cylinder.radiusTop * 2 : 1,
+      diameterBottom: newValue.mesh.cylinder.radiusBottom !== undefined ? newValue.mesh.cylinder.radiusBottom * 2 : 1,
+      enclose: true,
+      subdivisions: 16,
+      tessellation: 16,
+      arc: Math.PI * 2,
+      updatable: false,
+    })
+
+    entity.meshRenderer = baseSphere.createInstance('instanced-sphere')
+    entity.meshRenderer.parent = entity
+
+    entity.meshRenderer = mesh
+    entity.meshRenderer.parent = entity
   } else if (newValue?.mesh?.$case == 'plane') {
     const mesh = MeshBuilder.CreatePlane('plane-shape', {
       width: 1,
