@@ -23,7 +23,7 @@ export async function initEngine(): Promise<BABYLON.Scene> {
 
   scene.actionManager = new BABYLON.ActionManager(scene)
 
-  babylon.enableOfflineSupport = false
+
 
   babylon.disableManifestCheck = true
 
@@ -46,7 +46,8 @@ export async function initEngine(): Promise<BABYLON.Scene> {
     } as any
   })
 
-  BABYLON.Database.IDBStorageEnabled = true;
+  BABYLON.Database.IDBStorageEnabled = true
+  babylon.enableOfflineSupport = true
 
   initKeyboard()
 

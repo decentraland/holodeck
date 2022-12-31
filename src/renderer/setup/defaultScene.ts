@@ -1,5 +1,4 @@
 import * as BABYLON from '@babylonjs/core'
-import future from 'fp-future'
 
 export const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement // Get the canvas element
 

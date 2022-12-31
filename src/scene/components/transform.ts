@@ -74,13 +74,13 @@ function reparentEntity(entity: EcsEntity) {
     if (entity.parent && (entity.parent as any)['entityId'] == parentEntityId) return
     if (!parentEntityId) {
       // parent with the scene root
-      entity.setParent(context.rootNode)
+      entity.parent = context.rootNode
     } else {
       // parent with other entity
       const parentEntity = context.getEntityOrNull(parentEntityId)
       if (parentEntity) {
         // happy path, the parent entity already exists
-        entity.setParent(parentEntity)
+        entity.parent = parentEntity
       } else {
         scheduleFutureReparenting(entity, parentEntityId)
       }
@@ -113,7 +113,7 @@ function reparentChildrenToRoot(entity: EcsEntity) {
 
   if (rootNode) {
     for (const child of entity.childrenEntities()) {
-      child.setParent(entity)
+      child.parent = entity
       scheduleFutureReparenting(child, entity.entityId)
     }
   } else {

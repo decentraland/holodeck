@@ -1,6 +1,7 @@
 import * as Schemas from '@dcl/schemas'
-import { ComponentDefinition, Entity, WireMessage } from '@dcl/sdk/ecs'
+import { ComponentDefinition, Engine, Entity, WireMessage } from '@dcl/sdk/ecs'
 import { EcsEntity } from './EcsEntity'
+import * as components from '@dcl/ecs/dist/components'
 
 export type LoadableScene = {
   readonly entity: Readonly<Omit<Schemas.Entity, 'id'>>
@@ -18,11 +19,30 @@ export class SceneContext {
     error: console.error.bind(console),
   }
 
+  engine = Engine({
+    onChangeFunction: (
+      entity: Entity,
+      component: ComponentDefinition<any>,
+      componentId: number,
+      op: WireMessage.Enum
+    ) => {
+      this.processEcsChange(entity, component, op)
+    },
+  })
+
+  Billboard = components.Billboard(this.engine)
+  Transform = components.Transform(this.engine)
+  Material = components.Material(this.engine)
+  MeshRenderer = components.MeshRenderer(this.engine)
+  GltfContainer = components.GltfContainer(this.engine)
+  TextShape = components.TextShape(this.engine)
+  PointerEvents = components.PointerEvents(this.engine)
+
   constructor(public loadableScene: LoadableScene) {
     this.rootNode = new EcsEntity(0 as Entity, this.weakThis)
   }
 
-  processEcsChange(entityId: Entity, component: ComponentDefinition<any>, op: WireMessage.Enum) {
+  private processEcsChange(entityId: Entity, component: ComponentDefinition<any>, op: WireMessage.Enum) {
     if (op == /*PUT_COMPONENT*/ 1) {
       // when setting a component value we need to get or create the entity
       const entity = this.getOrCreateEntity(entityId)
@@ -70,6 +90,10 @@ export class SceneContext {
     }
 
     return null
+  }
+
+  async update(dt: number) {
+    await this.engine.update(dt)
   }
 }
 

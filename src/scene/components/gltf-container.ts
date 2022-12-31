@@ -1,5 +1,4 @@
 import * as BABYLON from '@babylonjs/core'
-import { FileToolsOptions } from '@babylonjs/core'
 import { GLTFFileLoader, GLTFLoaderAnimationStartMode } from '@babylonjs/loaders'
 import { GLTFLoader } from '@babylonjs/loaders/glTF/2.0'
 import { PBGltfContainer } from '@dcl/sdk/ecs'
@@ -9,6 +8,7 @@ import { markAsCollider } from '../../renderer/visual/colliders'
 import type { ComponentOperation } from '../component-operations'
 import { EcsEntity } from '../EcsEntity'
 import { SceneContext } from '../SceneContext'
+import { isEntityPickable } from './pointer-events'
 
 const sceneContextMap = new Map<string /*sceneId*/, WeakRef<SceneContext>>()
 
@@ -17,6 +17,7 @@ BABYLON.SceneLoader.OnPluginActivatedObservable.add(function (plugin) {
     plugin.animationStartMode = GLTFLoaderAnimationStartMode.NONE
     plugin.compileMaterials = true
     plugin.validate = false
+    plugin.createInstances = true
     plugin.animationStartMode = 0
     plugin.preprocessUrlAsync = async function (url: string) {
       // HERE BE DRAGONS 🐉:
@@ -83,7 +84,7 @@ export const putGltfContaierComponent: ComponentOperation = (entity, component) 
         file,
         scene,
         (assetContainer) => {
-          processGLTFAssetContainer(assetContainer)
+          processGLTFAssetContainer(assetContainer, entity)
 
           // Fin the main mesh and add it as the BasicShape.nameInEntity component.
           assetContainer.meshes
@@ -119,7 +120,7 @@ function removeCurrentGltf(entity: EcsEntity) {
   }
 }
 
-export function processGLTFAssetContainer(assetContainer: BABYLON.AssetContainer) {
+export function processGLTFAssetContainer(assetContainer: BABYLON.AssetContainer, entity: EcsEntity) {
   assetContainer.meshes.forEach((mesh) => {
     if (mesh instanceof BABYLON.Mesh) {
       if (mesh.geometry && !assetContainer.geometries.includes(mesh.geometry)) {
@@ -137,7 +138,7 @@ export function processGLTFAssetContainer(assetContainer: BABYLON.AssetContainer
       })
   })
 
-  processColliders(assetContainer)
+  processColliders(assetContainer, entity)
 
   // Find all the materials from all the meshes and add to $.materials
   assetContainer.meshes.forEach((mesh) => {
@@ -242,7 +243,7 @@ export function cleanupAssetContainer($: BABYLON.AssetContainer) {
   }
 }
 
-export function processColliders($: BABYLON.AssetContainer) {
+function processColliders($: BABYLON.AssetContainer, entity: EcsEntity) {
   for (let i = 0; i < $.meshes.length; i++) {
     let mesh = $.meshes[i]
 
@@ -252,7 +253,7 @@ export function processColliders($: BABYLON.AssetContainer) {
       mesh.isPickable = false
       markAsCollider(mesh)
     } else {
-      mesh.isPickable = true
+      mesh.isPickable = isEntityPickable(entity)
     }
   }
 }
