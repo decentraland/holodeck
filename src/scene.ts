@@ -1,6 +1,9 @@
 import { connectContext } from './mocked-scene'
 import { babylon } from './renderer/setup/defaultScene'
+import { getLoadableSceneFromUrn } from './scene/scene-loader'
 import { LoadableScene, SceneContext } from './scene/SceneContext'
+import { withQuickJsVm } from './scene/vm'
+import { loadRemoteVmScene } from './scene/vm-scene'
 
 // this was taken verbatim from my deployed world at menduz.dcl.eth
 function getLoadableScene(id: string): LoadableScene {
@@ -76,29 +79,32 @@ function getLoadableScene(id: string): LoadableScene {
   }
 }
 
-const scene1 = new SceneContext(
-  getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm1')
-)
-const scene2 = new SceneContext(
-  getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm2')
-)
-scene2.rootNode.position.set(0, 5, 0)
-const engineScene1 = connectContext(scene1)
-const engineScene2 = connectContext(scene2)
+// const scene1 = new SceneContext(
+//   getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm1')
+// )
+// const scene2 = new SceneContext(
+//   getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm2')
+// )
+// scene2.rootNode.position.set(0, 5, 0)
+// const engineScene1 = connectContext(scene1)
+// const engineScene2 = connectContext(scene2)
 
-let i = 0
+// let i = 0
 
-babylon.onEndFrameObservable.add(async () => {
-  await engineScene1.update(babylon.getDeltaTime() / 1000)
+// babylon.onEndFrameObservable.add(async () => {
+//   await engineScene1.update(babylon.getDeltaTime() / 1000)
 
-  if (i++ % 5 == 0) {
-    console.time('engine2.update')
-    await engineScene2.update(babylon.getDeltaTime() / 1000)
-    console.timeEnd('engine2.update')
-  }
-})
+//   if (i++ % 5 == 0) {
+//     console.time('engine2.update')
+//     await engineScene2.update(babylon.getDeltaTime() / 1000)
+//     console.timeEnd('engine2.update')
+//   }
+// })
 
-babylon.onEndFrameObservable.add(async () => {
-  await scene1.update(babylon.getDeltaTime() / 1000)
-  await scene2.update(babylon.getDeltaTime() / 1000)
+const menduzDclEthWorld =
+  'urn:decentraland:entity:bafkreihioglnf6pwdp5t2o6sl7dxne7rmlq2ptcfjh7udih3xfcyqa5x3u?baseUrl=https://worlds-content-server.decentraland.org/ipfs/'
+
+loadRemoteVmScene(menduzDclEthWorld).catch((err) => {
+  console.error(err)
+  debugger
 })

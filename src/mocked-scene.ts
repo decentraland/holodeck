@@ -19,8 +19,8 @@ export function connectContext(ctx: SceneContext) {
     },
     async send(message) {
       const response = await ctx.receiveBatch([message])
-      if (response) {
-        transport.onmessage?.call(transport, response)
+      for (const message of response) {
+        transport.onmessage?.call(transport, message)
       }
     },
   }

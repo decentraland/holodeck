@@ -4,6 +4,8 @@ const { readFileSync } = require('fs')
 const path = require('path')
 
 const builtIns = {
+  fs: require.resolve('./src/throw'),
+  path: require.resolve('./src/throw'),
   // crypto: require.resolve('crypto-browserify'),
   // stream: require.resolve('stream-browserify'),
   // buffer: require.resolve('./node_modules/buffer/index.js')
@@ -48,7 +50,7 @@ const commonOptions = {
   sourcesContent: !!cliopts.watch,
   treeShaking: true,
   plugins: [
-    // nodeBuiltIns(),
+    nodeBuiltIns(),
     workerLoader(),
   ],
 }

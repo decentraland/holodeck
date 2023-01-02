@@ -1,6 +1,7 @@
 import * as Schemas from '@dcl/schemas'
 import { ComponentDefinition, Engine, Entity, Transport, WireMessage } from '@dcl/sdk/ecs'
 import { EcsEntity } from './EcsEntity'
+import { babylon } from '../renderer/setup/defaultScene'
 import * as components from '@dcl/ecs/dist/components'
 import future, { IFuture } from 'fp-future'
 
@@ -58,7 +59,10 @@ export class SceneContext {
    * the frame
    * @ADR https://adr.decentraland.org/adr/ADR-148
    */
-  nextFrameFutures: Array<IFuture<Uint8Array | null>> = []
+  nextFrameFutures: Array<IFuture<Uint8Array[]>> = []
+
+  // this future is resolved when the scene is disposed
+  readonly stopped = future<void>()
 
   constructor(public loadableScene: LoadableScene) {
     this.rootNode = new EcsEntity(0 as Entity, this.#weakThis)
@@ -73,6 +77,8 @@ export class SceneContext {
       },
     }
     this.engine.addTransport(this.transport)
+
+    babylon.onEndFrameObservable.add(this.update)
   }
 
   /**
@@ -81,11 +87,11 @@ export class SceneContext {
    *
    * @ADR https://adr.decentraland.org/adr/ADR-148
    */
-  async receiveBatch(batch: Uint8Array[]): Promise<Uint8Array | null> {
+  async receiveBatch(batch: Uint8Array[]): Promise<Uint8Array[]> {
     this.incomingMessages.push(...batch)
 
     // create a promise for the next frame processing
-    const fut = future<Uint8Array | null>()
+    const fut = future<Uint8Array[]>()
     this.nextFrameFutures.push(fut)
     return fut
   }
@@ -140,7 +146,15 @@ export class SceneContext {
     return null
   }
 
-  async update(dt: number) {
+  resolveFileAbsolute(src: string): string | null {
+    const resolved = this.resolveFile(src)
+
+    if (src) return this.loadableScene.baseUrl + resolved
+
+    return null
+  }
+
+  readonly update = async() => {
     // copy the array and clean the incoming messages to prevent information loss
     const inMessages = this.incomingMessages.splice(0)
 
@@ -150,40 +164,31 @@ export class SceneContext {
     }
 
     // update the engine
-    await this.engine.update(dt)
+    await this.engine.update(babylon.getDeltaTime() / 1000)
 
     // collect updates and clean outMessages
     const updates = this.outMessages.splice(0)
-    const message = concatUint8Arrays(updates)
 
     // finally resolve the future so the function "receiveBatch" is unblocked
     // and the next scripting frame is allowed to happen
-    this.nextFrameFutures.forEach((fut) => fut.resolve(message))
+    this.nextFrameFutures.forEach((fut) => fut.resolve(updates))
 
     // finally clean the futures
     this.nextFrameFutures.length = 0
+  }
+
+  dispose() {
+    this.stopped.resolve()
+    for(const [entityId] of this.#entities) {
+      this.removeEntity(entityId)
+    }
+    this.rootNode.parent = null
+    this.rootNode.dispose()
+    babylon.onEndFrameObservable.removeCallback(this.update)
   }
 }
 
 // an entity only exists if it has any component attached to it
 function shouldEntityBeDeleted(entity: EcsEntity) {
   return entity.usedComponents.size == 0
-}
-
-function concatUint8Arrays(list: Uint8Array[]): Uint8Array | null {
-  if (list.length === 0) return null
-  // Get the total length of all arrays.
-  let length = 0
-  list.forEach((item) => {
-    length += item.length
-  })
-
-  // Create a new array with total length and merge all source arrays.
-  const mergedArray = new Uint8Array(length)
-  let offset = 0
-  list.forEach((item) => {
-    mergedArray.set(item, offset)
-    offset += item.length
-  })
-  return mergedArray
 }
