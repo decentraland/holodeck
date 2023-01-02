@@ -1,68 +1,93 @@
 import { Color3 } from '@dcl/ecs-math'
+import { Engine, Transport } from '@dcl/sdk/ecs'
 import { SceneContext } from './scene/SceneContext'
+import * as components from '@dcl/ecs/dist/components'
 
 export function connectContext(ctx: SceneContext) {
+  // create engine and its components
+  const engine = Engine()
+  const Billboard = components.Billboard(engine)
+  const Transform = components.Transform(engine)
+  const Material = components.Material(engine)
+  const MeshRenderer = components.MeshRenderer(engine)
+  const GltfContainer = components.GltfContainer(engine)
+  const TextShape = components.TextShape(engine)
+
+  const transport: Transport = {
+    filter() {
+      return true
+    },
+    async send(message) {
+      const response = await ctx.receiveBatch([message])
+      if (response) {
+        transport.onmessage?.call(transport, response)
+      }
+    },
+  }
+
+  engine.addTransport(transport)
+
   // My cube generator
   function createCube(x: number, y: number, z: number) {
     // Dynamic entity because we aren't loading static entities out of this scene code
-    const myEntity = ctx.engine.addEntity(true)
+    const myEntity = engine.addEntity(true)
 
-    ctx.Transform.create(myEntity, {
+    Transform.create(myEntity, {
       position: { x, y, z },
     })
 
-    ctx.MeshRenderer.setBox(myEntity)
+    MeshRenderer.setBox(myEntity)
 
     return myEntity
   }
 
   function spawnCubes() {
-    const plane = ctx.engine.addEntity()
-    ctx.MeshRenderer.setPlane(plane)
-    ctx.Billboard.create(plane)
-    ctx.Transform.create(plane, {
+    const plane = engine.addEntity()
+    MeshRenderer.setPlane(plane)
+    Billboard.create(plane)
+    Transform.create(plane, {
       position: { x: -3, y: 6, z: -3 },
       scale: { x: 1, y: 1, z: 1 },
     })
 
-    const cyllinder = ctx.engine.addEntity()
-    ctx.MeshRenderer.setCylinder(cyllinder, 0.3, 0.8)
-    ctx.Transform.create(cyllinder, {
+    const cyllinder = engine.addEntity()
+    MeshRenderer.setCylinder(cyllinder, 0.3, 0.8)
+    Transform.create(cyllinder, {
       position: { x: -4, y: 6, z: -4 },
     })
 
-    const sphere = ctx.engine.addEntity()
-    ctx.MeshRenderer.setSphere(sphere)
-    ctx.Transform.create(sphere, {
+    const sphere = engine.addEntity()
+    MeshRenderer.setSphere(sphere)
+    Transform.create(sphere, {
       position: { x: -5, y: 6, z: -2 },
     })
     {
-      const glb = ctx.engine.addEntity()
-      ctx.GltfContainer.create(glb, { src: 'models/shark.glb' })
-      ctx.Transform.create(glb, {
+      const glb = engine.addEntity()
+      GltfContainer.create(glb, { src: 'models/shark.glb' })
+      Transform.create(glb, {
         position: { x: 0, y: 1, z: 0 },
       })
     }
     {
-      const glb = ctx.engine.addEntity()
-      ctx.GltfContainer.create(glb, { src: 'models/Fish_01.glb' })
-      ctx.Transform.create(glb, {
+      const glb = engine.addEntity()
+      GltfContainer.create(glb, { src: 'models/Fish_01.glb' })
+      Transform.create(glb, {
         position: { x: -10, y: 1, z: 5 },
         scale: { x: 5, y: 5, z: 5 },
       })
     }
-    const gltf = ctx.engine.addEntity()
-    ctx.GltfContainer.create(gltf, { src: 'models/Underwater_floor.glb' })
-    ctx.Transform.create(gltf, {
+    const gltf = engine.addEntity()
+    GltfContainer.create(gltf, { src: 'models/Underwater_floor.glb' })
+    Transform.create(gltf, {
       position: { x: -10, y: 0, z: -2 },
     })
 
-    const sign = ctx.engine.addEntity(true)
-    ctx.Transform.create(sign, {
+    const sign = engine.addEntity(true)
+    Transform.create(sign, {
       position: { x: 8, y: 6, z: 8 },
     })
 
-    ctx.TextShape.create(sign, {
+    TextShape.create(sign, {
       text: `Stress test SDK v7.0.5\n16x16 cubes`,
       fontAutoSize: false,
       fontSize: 5,
@@ -84,7 +109,7 @@ export function connectContext(ctx: SceneContext) {
       textWrapping: false,
     })
 
-    ctx.Billboard.create(sign, {
+    Billboard.create(sign, {
       oppositeDirection: true,
     })
 
@@ -100,11 +125,11 @@ export function connectContext(ctx: SceneContext) {
   function CircleHoverSystem(dt: number) {
     hoverState += Math.PI * dt * 0.5
 
-    const entitiesWithBoxShapes = ctx.engine.getEntitiesWith(ctx.MeshRenderer, ctx.Transform)
+    const entitiesWithBoxShapes = engine.getEntitiesWith(MeshRenderer, Transform)
 
     // iterate over the entities of the group
     for (const [entity] of entitiesWithBoxShapes) {
-      const transform = ctx.Transform.getMutable(entity)
+      const transform = Transform.getMutable(entity)
 
       // mutate the rotation
       transform.position.y =
@@ -128,19 +153,21 @@ export function connectContext(ctx: SceneContext) {
       color = !color
     }
 
-    const entitiesWithBoxShapes = ctx.engine.getEntitiesWith(ctx.MeshRenderer, ctx.Transform)
+    const entitiesWithBoxShapes = engine.getEntitiesWith(MeshRenderer, Transform)
 
     // iterate over the entities of the group
     for (const [entity] of entitiesWithBoxShapes) {
-      ctx.Material.setPbrMaterial(entity, {
+      Material.setPbrMaterial(entity, {
         albedoColor: color ? Color3.Blue() : Color3.Green(),
       })
-      const { scale } = ctx.Transform.getMutable(entity)
+      const { scale } = Transform.getMutable(entity)
       scale.x = scale.y = scale.z = color ? 0.5 : 1
     }
   }
 
   spawnCubes()
-  ctx.engine.addSystem(CircleHoverSystem)
-  ctx.engine.addSystem(MaterialChangerSystem)
+  engine.addSystem(CircleHoverSystem)
+  engine.addSystem(MaterialChangerSystem)
+
+  return engine
 }

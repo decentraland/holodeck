@@ -83,8 +83,21 @@ const scene2 = new SceneContext(
   getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm2')
 )
 scene2.rootNode.position.set(0, 5, 0)
-connectContext(scene1)
-connectContext(scene2)
+const engineScene1 = connectContext(scene1)
+const engineScene2 = connectContext(scene2)
+
+let i = 0
+
+babylon.onEndFrameObservable.add(async () => {
+  await engineScene1.update(babylon.getDeltaTime() / 1000)
+
+  if (i++ % 5 == 0) {
+    console.time('engine2.update')
+    await engineScene2.update(babylon.getDeltaTime() / 1000)
+    console.timeEnd('engine2.update')
+  }
+})
+
 babylon.onEndFrameObservable.add(async () => {
   await scene1.update(babylon.getDeltaTime() / 1000)
   await scene2.update(babylon.getDeltaTime() / 1000)
