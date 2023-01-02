@@ -11,6 +11,7 @@ const builtIns = {
   // buffer: require.resolve('./node_modules/buffer/index.js')
 }
 
+
 const workerLoader = () => {
   return {
     name: 'worker-loader',
