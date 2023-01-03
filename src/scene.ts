@@ -1,104 +1,23 @@
-import { connectContext } from './mocked-scene'
-import { babylon } from './renderer/setup/defaultScene'
-import { LoadableScene, SceneContext } from './scene/SceneContext'
+import { loadRemoteVmScene } from './runtimes/quickjs-vm'
+import { connectSameThreadScene, getHardcodedLoadableScene } from './runtimes/same-thread'
+import { SceneContext } from './scene/SceneContext'
 
-// this was taken verbatim from my deployed world at menduz.dcl.eth
-function getLoadableScene(id: string): LoadableScene {
-  return {
-    baseUrl: 'https://worlds-content-server.decentraland.org/ipfs/',
-    id: 'urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm',
-    entity: {
-      version: 'v3',
-      type: 'scene' as any,
-      pointers: ['0,0', '0,1'],
-      timestamp: 1665777069759,
-      content: [
-        {
-          file: 'bin/game.js',
-          hash: 'bafkreibyndfz2k2vw7qegxgdhcqb5vlyepcszycpk445snt4cxfqpsvasu',
-        },
-        {
-          file: 'bin/game.js.map',
-          hash: 'bafybeigh74j7s6jkl4gwilwu6ftlb2qrhliy4an5l3cxsma6dkg4rp4lse',
-        },
-        {
-          file: 'models/Fish_01.glb',
-          hash: 'bafkreigllbmvlnhgdbal5w23rzpvdgpfgw5izytvygc2jz7api7d45xrdy',
-        },
-        {
-          file: 'models/Fish_03.glb',
-          hash: 'bafkreichq7bpfxz53kxi2a7vs7goj4nd6mwmg6ov6oh5pcueqyid6j4cwi',
-        },
-        {
-          file: 'models/Fish_04.glb',
-          hash: 'bafkreian3us5uykagt57wehzoutjfom2jctj2hsee6eulr36m7dnctmpqa',
-        },
-        {
-          file: 'models/Image_0.png',
-          hash: 'bafkreih5kqir5ykts43262cxm755la4s3pjfel7wf5gqacsj4tdpferevi',
-        },
-        {
-          file: 'models/PiratesPack_TX.png.png',
-          hash: 'bafkreibtlcu5xu4u7qloyhi6s36e722qu7y7ths2xaspwqgqynpnl5aukq',
-        },
-        {
-          file: 'models/Underwater_floor.glb',
-          hash: 'bafybeicyrwyoet7lhcpjedfq3taitm5e2ap6j6nqc3mkgwmbylrlu3qp5y',
-        },
-        {
-          file: 'models/shark.glb',
-          hash: 'bafkreigwbedamc5bfsqawkllabrccaftw6hjzxugu7jk4ey2krrnvgjrhy',
-        },
-        {
-          file: 'scene.json',
-          hash: 'bafkreievaypmaxhrsg3bts4gjs6fcyrrsltkkuxxcqmuor2sw3og6i7up4',
-        },
-      ],
-      metadata: {
-        display: {
-          title: 'DCL Scene',
-          description: 'My new Decentraland project',
-          navmapThumbnail: 'images/scene-thumbnail.png',
-          favicon: 'favicon_asset',
-        },
-        owner: '',
-        contact: { name: 'wacaine', email: '' },
-        main: 'bin/game.js',
-        tags: [],
-        scene: { parcels: ['0,0', '0,1'], base: '0,0' },
-        spawnPoints: [
-          { name: 'spawn1', default: true, position: { x: 0, y: 0, z: 0 }, cameraTarget: { x: 8, y: 1, z: 8 } },
-        ],
-        requiredPermissions: [],
-        featureToggles: {},
-      },
-    },
-  }
+// First load a quickJS vm running a world
+{
+  const menduzDclEthWorld =
+    'urn:decentraland:entity:bafkreihiv5zkzjui46gvxtsnk5pfogmq7kyzijxpf3gjqlb2ivydcuwgxq?baseUrl=https://worlds-content-server.decentraland.org/ipfs/'
+
+  loadRemoteVmScene(menduzDclEthWorld).catch((err) => {
+    console.error(err)
+    debugger
+  })
 }
 
-const scene1 = new SceneContext(
-  getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm1')
-)
-const scene2 = new SceneContext(
-  getLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm2')
-)
-scene2.rootNode.position.set(0, 5, 0)
-const engineScene1 = connectContext(scene1)
-const engineScene2 = connectContext(scene2)
-
-let i = 0
-
-babylon.onEndFrameObservable.add(async () => {
-  await engineScene1.update(babylon.getDeltaTime() / 1000)
-
-  if (i++ % 5 == 0) {
-    console.time('engine2.update')
-    await engineScene2.update(babylon.getDeltaTime() / 1000)
-    console.timeEnd('engine2.update')
-  }
-})
-
-babylon.onEndFrameObservable.add(async () => {
-  await scene1.update(babylon.getDeltaTime() / 1000)
-  await scene2.update(babylon.getDeltaTime() / 1000)
-})
+// then load a "same thread" vm, running on the rendering thread
+{
+  const scene1 = new SceneContext(
+    getHardcodedLoadableScene('urn:decentraland:entity:bafkreid44xhavttoz4nznidmyj3rjnrgdza7v6l7kd46xdmleor5lmsxfm1')
+  )
+  scene1.rootNode.position.set(50, 5, 0)
+  connectSameThreadScene(scene1)
+}
