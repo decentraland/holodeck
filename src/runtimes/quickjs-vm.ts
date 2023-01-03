@@ -1,6 +1,6 @@
-import { getLoadableSceneFromUrn } from "./scene-loader"
-import { SceneContext } from "./SceneContext"
-import { withQuickJsVm } from "./vm"
+import { getLoadableSceneFromUrn } from "../scene/scene-loader"
+import { SceneContext } from "../scene/SceneContext"
+import { withQuickJsVm } from "./vm/vm"
 
 export async function loadRemoteVmScene(urn: string) {
   // resolve scene from its URN and create context

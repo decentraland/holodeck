@@ -1,5 +1,5 @@
 import * as Schemas from '@dcl/schemas'
-import { ComponentDefinition, Engine, Entity, Transport, WireMessage } from '@dcl/sdk/ecs'
+import { ComponentDefinition, CrdtMessage, CrdtMessageType, Engine, Entity, Transport } from '@dcl/sdk/ecs'
 import { EcsEntity } from './EcsEntity'
 import { babylon } from '../renderer/setup/defaultScene'
 import * as components from '@dcl/ecs/dist/components'
@@ -22,13 +22,8 @@ export class SceneContext {
   }
 
   engine = Engine({
-    onChangeFunction: (
-      entity: Entity,
-      component: ComponentDefinition<any>,
-      componentId: number,
-      op: WireMessage.Enum
-    ) => {
-      this.processEcsChange(entity, component, op)
+    onChangeFunction: (entity, op, component) => {
+      this.processEcsChange(entity, op, component)
     },
   })
 
@@ -96,20 +91,22 @@ export class SceneContext {
     return fut
   }
 
-  private processEcsChange(entityId: Entity, component: ComponentDefinition<any>, op: WireMessage.Enum) {
-    if (op == /*PUT_COMPONENT*/ 1) {
+  private processEcsChange(entityId: Entity, op: CrdtMessageType, component?: ComponentDefinition<any>) {
+    if (op == CrdtMessageType.PUT_COMPONENT) {
       // when setting a component value we need to get or create the entity
       const entity = this.getOrCreateEntity(entityId)
-      entity.putComponent(component)
-    } else if (op == /*DELETE_COMPONENT*/ 2) {
+      entity.putComponent(component!)
+    } else if (op == CrdtMessageType.DELETE_COMPONENT) {
       // when deleting a component, we can skip the entity creation if it doesn't exist
       const entity = this.getOrCreateEntity(entityId)
       if (entity) {
-        entity.deleteComponent(component)
+        entity.deleteComponent(component!)
         if (shouldEntityBeDeleted(entity)) {
           this.removeEntity(entityId)
         }
       }
+    } else if (op == CrdtMessageType.DELETE_ENTITY) {
+      this.removeEntity(entityId)
     }
   }
 
@@ -154,7 +151,7 @@ export class SceneContext {
     return null
   }
 
-  readonly update = async() => {
+  readonly update = async () => {
     // copy the array and clean the incoming messages to prevent information loss
     const inMessages = this.incomingMessages.splice(0)
 
@@ -179,7 +176,7 @@ export class SceneContext {
 
   dispose() {
     this.stopped.resolve()
-    for(const [entityId] of this.#entities) {
+    for (const [entityId] of this.#entities) {
       this.removeEntity(entityId)
     }
     this.rootNode.parent = null
